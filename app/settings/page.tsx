@@ -72,7 +72,7 @@ export default async function SettingsPage({
                 <input name="displayName" defaultValue={dashboard.profile.displayName} required maxLength={60} className="h-12 w-full rounded-xl border border-[#edd4dd] bg-white px-4 text-base outline-none transition focus:border-[#d99aae] focus:ring-4 focus:ring-[#f8dce5]" />
               </label>
 
-              <ProfilePhotoPicker initialUrl={dashboard.profile.avatarUrl} displayName={dashboard.profile.displayName} />
+              <ProfilePhotoPicker initialUrl={dashboard.profile.avatarUrl} />
 
               <label className="block">
                 <span className="mb-2 block text-sm font-extrabold text-[#755967]">Daily message</span>

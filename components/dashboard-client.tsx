@@ -221,9 +221,11 @@ export function DashboardClient({ dashboard, formattedDate }: Props) {
             <p className="mt-3 max-w-2xl text-base font-medium leading-7 text-[#876a77] sm:text-lg">“{data.greetingMessage}”</p>
           </div>
           <div className="mt-6 flex flex-wrap items-center gap-3 lg:mt-0 lg:flex-col lg:items-end">
-            <div className="gentle-float grid h-20 w-20 overflow-hidden rounded-[1.5rem] border-2 border-white bg-gradient-to-br from-[#ffe4eb] to-[#eee6ff] text-4xl shadow-inner sm:h-24 sm:w-24">
-              {data.profile.avatarUrl ? <img src={data.profile.avatarUrl} alt={`${data.profile.displayName}'s profile`} className="h-full w-full object-cover" /> : <span className="m-auto">🪷</span>}
-            </div>
+            {data.profile.avatarUrl && (
+              <div className="gentle-float grid h-20 w-20 overflow-hidden rounded-[1.5rem] border-2 border-white bg-gradient-to-br from-[#ffe4eb] to-[#eee6ff] text-4xl shadow-inner sm:h-24 sm:w-24">
+                <img src={data.profile.avatarUrl} alt={`${data.profile.displayName}'s profile`} className="h-full w-full object-cover" />
+              </div>
+            )}
             <Link href="/settings" className="soft-glow flex h-10 items-center gap-2 rounded-xl bg-[#b9788e] px-4 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[#a9657d] focus:outline-none focus:ring-4 focus:ring-[#edc8d4]">
               <Settings className="h-3.5 w-3.5" /> Settings
             </Link>

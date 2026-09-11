@@ -1,6 +1,7 @@
 import type { DashboardData } from "@/lib/storage";
 
 const storageKey = "petal-and-plan-dashboard-v2";
+const removedDefaultAvatar = "/uploads/profile-06fdbf71-d49a-4f64-9733-c921221c3c8b.png";
 
 export function isHostedBrowser(): boolean {
   if (typeof window === "undefined") return false;
@@ -28,7 +29,13 @@ export function loadBrowserDashboard(fallback: DashboardData): DashboardData {
     const dashboard: DashboardData = {
       ...fallback,
       ...parsed,
-      profile: { ...fallback.profile, ...parsed.profile },
+      profile: {
+        ...fallback.profile,
+        ...parsed.profile,
+        avatarUrl: parsed.profile?.avatarUrl === removedDefaultAvatar
+          ? ""
+          : parsed.profile?.avatarUrl ?? fallback.profile.avatarUrl,
+      },
       preferences: { ...fallback.preferences, ...parsed.preferences },
       tasks: parsed.tasks ?? fallback.tasks,
       habits: parsed.habits ?? fallback.habits,
