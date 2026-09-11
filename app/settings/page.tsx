@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, Camera, Check, Clock3, Heart, Settings2 } from "lucide-react";
-import { updateSettings } from "@/app/actions";
+import { SettingsFormShell } from "@/components/settings-form-shell";
+import { ProfilePreview } from "@/components/profile-preview";
 import { readDashboard } from "@/lib/storage";
 
 export const dynamic = "force-dynamic";
@@ -26,7 +27,6 @@ export default async function SettingsPage({
   searchParams: { saved?: string };
 }) {
   const dashboard = await readDashboard();
-  const initials = dashboard.profile.displayName.trim().slice(0, 2).toUpperCase() || "ME";
   const didSave = searchParams.saved === "1";
 
   return (
@@ -42,9 +42,7 @@ export default async function SettingsPage({
 
         <header className="float-in overflow-hidden rounded-[1.75rem] border border-white/90 bg-white/80 p-6 shadow-[0_20px_60px_rgba(153,89,112,0.10)] backdrop-blur-md sm:p-8">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-            <div className="gentle-float grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-[1.75rem] border-4 border-white bg-gradient-to-br from-[#f9cad8] to-[#dfd2f5] text-2xl font-black text-[#785267] shadow-[0_12px_30px_rgba(153,89,112,0.16)]">
-              {dashboard.profile.avatarUrl ? <img src={dashboard.profile.avatarUrl} alt={`${dashboard.profile.displayName}'s profile`} className="h-full w-full object-cover" /> : initials}
-            </div>
+            <ProfilePreview dashboard={dashboard} />
             <div>
               <p className="text-sm font-extrabold uppercase tracking-[0.16em] text-[#bd8295]">Your space, your way</p>
               <h1 className="mt-1 font-display text-3xl font-semibold text-[#5e3e4d] sm:text-4xl">Profile &amp; preferences</h1>
@@ -60,7 +58,7 @@ export default async function SettingsPage({
           </div>
         )}
 
-        <form action={updateSettings} className="mt-6 grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+        <SettingsFormShell dashboard={dashboard}>
           <section className="rounded-[1.75rem] border border-pink-100 bg-white/80 p-5 shadow-[0_18px_50px_rgba(153,89,112,0.08)] backdrop-blur-sm sm:p-7">
             <div className="mb-6 flex items-center gap-3">
               <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[#fff0f4] text-[#b96f87]"><Heart className="h-5 w-5" /></span>
@@ -114,7 +112,7 @@ export default async function SettingsPage({
               <Check className="h-5 w-5" /> Save my settings
             </button>
           </section>
-        </form>
+        </SettingsFormShell>
       </div>
     </main>
   );

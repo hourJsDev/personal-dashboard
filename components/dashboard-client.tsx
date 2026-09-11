@@ -5,6 +5,7 @@ import { Check, ChevronDown, Plus, Save, Settings, Sparkles, Trash2 } from "luci
 import Link from "next/link";
 import { Checkbox } from "@/components/ui/checkbox";
 import { addHabit, addTask, deleteHabit, deleteTask, saveNotes, toggleHabit, toggleTask } from "@/app/actions";
+import { getBrowserTodayKey, isHostedBrowser, loadBrowserDashboard, saveBrowserDashboard } from "@/lib/browser-storage";
 import type { DashboardData, TaskCategory, TaskPriority } from "@/lib/storage";
 
 declare global {
@@ -46,6 +47,7 @@ const priorityStyle: Record<TaskPriority, string> = {
 type Props = { dashboard: DashboardData; formattedDate: string };
 
 export function DashboardClient({ dashboard, formattedDate }: Props) {
+  const [data, setData] = useState(dashboard);
   const [activeCategory, setActiveCategory] = useState<(typeof categories)[number]>("All");
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
@@ -53,37 +55,67 @@ export function DashboardClient({ dashboard, formattedDate }: Props) {
   const habitForm = useRef<HTMLFormElement>(null);
 
   const filteredTasks = useMemo(
-    () => dashboard.tasks.filter((task) => {
+    () => data.tasks.filter((task) => {
       const categoryMatches = activeCategory === "All" || task.category === activeCategory;
-      const visibilityMatches = dashboard.preferences.showCompletedTasks || !task.completed;
+      const visibilityMatches = data.preferences.showCompletedTasks || !task.completed;
       return categoryMatches && visibilityMatches;
     }),
-    [activeCategory, dashboard.preferences.showCompletedTasks, dashboard.tasks],
+    [activeCategory, data.preferences.showCompletedTasks, data.tasks],
   );
-  const completedCount = dashboard.tasks.filter((task) => task.completed).length;
-  const completion = dashboard.tasks.length ? Math.round((completedCount / dashboard.tasks.length) * 100) : 0;
+  const completedCount = data.tasks.filter((task) => task.completed).length;
+  const completion = data.tasks.length ? Math.round((completedCount / data.tasks.length) * 100) : 0;
 
-  function run(action: () => Promise<void>) {
-    startTransition(() => { void action(); });
+  function run(action: () => Promise<void>, updater?: (current: DashboardData) => DashboardData) {
+    startTransition(() => {
+      if (updater && isHostedBrowser()) {
+        setData((current) => {
+          const next = updater(current);
+          saveBrowserDashboard(next);
+          return next;
+        });
+        return;
+      }
+      void action();
+    });
   }
 
   function handleAdd(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
+    const formData = new FormData(form);
+    const title = String(formData.get("title") ?? "").trim();
+    const category = String(formData.get("category")) as TaskCategory;
+    const priority = String(formData.get("priority")) as TaskPriority;
+    if (!title) return;
     run(async () => {
-      await addTask(new FormData(form));
+      await addTask(formData);
       addForm.current?.reset();
-    });
+    }, (current) => ({
+      ...current,
+      tasks: [{ id: crypto.randomUUID(), title, category, priority, completed: false, date: getBrowserTodayKey(current.profile.timezone) }, ...current.tasks],
+    }));
+    if (isHostedBrowser()) addForm.current?.reset();
   }
 
   function handleAddHabit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
+    const formData = new FormData(form);
+    const title = String(formData.get("title") ?? "").trim();
+    if (!title) return;
     run(async () => {
-      await addHabit(new FormData(form));
+      await addHabit(formData);
       habitForm.current?.reset();
-    });
+    }, (current) => ({
+      ...current,
+      habits: [...current.habits, { id: crypto.randomUUID(), title, streak: 0, completedToday: false }],
+    }));
+    if (isHostedBrowser()) habitForm.current?.reset();
   }
+
+  useEffect(() => {
+    setData(isHostedBrowser() ? loadBrowserDashboard(dashboard) : dashboard);
+  }, [dashboard]);
 
   useEffect(() => {
     const context = document.modelContext;
@@ -109,7 +141,16 @@ export function DashboardClient({ dashboard, formattedDate }: Props) {
           if (!value.title || !taskCategories.includes(value.category as TaskCategory) || !priorities.includes(value.priority as TaskPriority)) throw new Error("Invalid task details");
           const data = new FormData();
           data.set("title", value.title); data.set("category", value.category!); data.set("priority", value.priority!);
-          await addTask(data); refresh();
+          if (isHostedBrowser()) {
+            const current = loadBrowserDashboard(dashboard);
+            saveBrowserDashboard({
+              ...current,
+              tasks: [{ id: crypto.randomUUID(), title: value.title, category: value.category as TaskCategory, priority: value.priority as TaskPriority, completed: false, date: getBrowserTodayKey(current.profile.timezone) }, ...current.tasks],
+            });
+          } else {
+            await addTask(data);
+          }
+          refresh();
           return { status: "created", title: value.title };
         },
       },
@@ -126,7 +167,13 @@ export function DashboardClient({ dashboard, formattedDate }: Props) {
           const value = input as { title?: string };
           if (!value.title?.trim()) throw new Error("A habit title is required");
           const data = new FormData(); data.set("title", value.title);
-          await addHabit(data); refresh();
+          if (isHostedBrowser()) {
+            const current = loadBrowserDashboard(dashboard);
+            saveBrowserDashboard({ ...current, habits: [...current.habits, { id: crypto.randomUUID(), title: value.title, streak: 0, completedToday: false }] });
+          } else {
+            await addHabit(data);
+          }
+          refresh();
           return { status: "created", title: value.title };
         },
       },
@@ -139,7 +186,13 @@ export function DashboardClient({ dashboard, formattedDate }: Props) {
           const value = input as { notes?: string };
           if (typeof value.notes !== "string") throw new Error("Notes must be text");
           const data = new FormData(); data.set("notes", value.notes);
-          await saveNotes(data); refresh();
+          if (isHostedBrowser()) {
+            const current = loadBrowserDashboard(dashboard);
+            saveBrowserDashboard({ ...current, notes: value.notes });
+          } else {
+            await saveNotes(data);
+          }
+          refresh();
           return { status: "saved", characters: value.notes.length };
         },
       },
@@ -163,12 +216,12 @@ export function DashboardClient({ dashboard, formattedDate }: Props) {
               <span className="rounded-full border border-purple-100 bg-[#faf7ff] px-3 py-1.5">✨ {completion}% complete</span>
             </div>
             <p className="mb-1 text-[0.8rem] font-extrabold uppercase tracking-[0.18em] text-[#b88294]">{formattedDate}</p>
-            <h1 className="font-[family-name:var(--font-fraunces)] text-3xl font-semibold tracking-[-0.03em] text-[#5e3e4d] sm:text-4xl lg:text-5xl">Good morning, {dashboard.profile.displayName}.</h1>
-            <p className="mt-3 max-w-2xl text-base font-medium leading-7 text-[#876a77] sm:text-lg">“{dashboard.greetingMessage}”</p>
+            <h1 className="font-[family-name:var(--font-fraunces)] text-3xl font-semibold tracking-[-0.03em] text-[#5e3e4d] sm:text-4xl lg:text-5xl">Good morning, {data.profile.displayName}.</h1>
+            <p className="mt-3 max-w-2xl text-base font-medium leading-7 text-[#876a77] sm:text-lg">“{data.greetingMessage}”</p>
           </div>
           <div className="mt-6 flex flex-wrap items-center gap-3 lg:mt-0 lg:flex-col lg:items-end">
             <div className="gentle-float grid h-20 w-20 overflow-hidden rounded-[1.5rem] border-2 border-white bg-gradient-to-br from-[#ffe4eb] to-[#eee6ff] text-4xl shadow-inner sm:h-24 sm:w-24">
-              {dashboard.profile.avatarUrl ? <img src={dashboard.profile.avatarUrl} alt={`${dashboard.profile.displayName}'s profile`} className="h-full w-full object-cover" /> : <span className="m-auto">🪷</span>}
+              {data.profile.avatarUrl ? <img src={data.profile.avatarUrl} alt={`${data.profile.displayName}'s profile`} className="h-full w-full object-cover" /> : <span className="m-auto">🪷</span>}
             </div>
             <Link href="/settings" className="soft-glow flex h-10 items-center gap-2 rounded-xl bg-[#b9788e] px-4 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[#a9657d] focus:outline-none focus:ring-4 focus:ring-[#edc8d4]">
               <Settings className="h-3.5 w-3.5" /> Settings
@@ -185,7 +238,7 @@ export function DashboardClient({ dashboard, formattedDate }: Props) {
               </div>
               <div className="flex items-center gap-2 text-sm font-bold text-[#8f7280]">
                 <span className="grid h-8 w-8 place-items-center rounded-full bg-[#fff0f4] text-[#bb7188]">{completedCount}</span>
-                of {dashboard.tasks.length} done
+                of {data.tasks.length} done
               </div>
             </div>
 
@@ -222,7 +275,7 @@ export function DashboardClient({ dashboard, formattedDate }: Props) {
             <div className="space-y-3" aria-busy={isPending}>
               {filteredTasks.length ? filteredTasks.map((task) => (
                 <article key={task.id} className={`group flex items-center gap-3 rounded-2xl border bg-white p-3.5 transition hover:-translate-y-0.5 hover:border-[#e6bdca] hover:shadow-[0_10px_28px_rgba(153,89,112,0.09)] sm:gap-4 sm:p-4 ${task.completed ? "opacity-65" : ""}`}>
-                  <Checkbox checked={task.completed} aria-label={`${task.completed ? "Mark incomplete" : "Mark complete"}: ${task.title}`} onCheckedChange={() => run(() => toggleTask(task.id))} className="h-6 w-6 rounded-lg border-2 border-[#d99aae] data-[state=checked]:border-[#b76d85] data-[state=checked]:bg-[#b76d85]" />
+                  <Checkbox checked={task.completed} aria-label={`${task.completed ? "Mark incomplete" : "Mark complete"}: ${task.title}`} onCheckedChange={() => run(() => toggleTask(task.id), (current) => ({ ...current, tasks: current.tasks.map((item) => item.id === task.id ? { ...item, completed: !item.completed } : item) }))} className="h-6 w-6 rounded-lg border-2 border-[#d99aae] data-[state=checked]:border-[#b76d85] data-[state=checked]:bg-[#b76d85]" />
                   <div className="min-w-0 flex-1">
                     <p className={`text-base font-bold text-[#654957] ${task.completed ? "line-through decoration-[#cc9bab] decoration-2" : ""}`}>{task.title}</p>
                     <div className="mt-2 flex flex-wrap gap-2">
@@ -230,7 +283,7 @@ export function DashboardClient({ dashboard, formattedDate }: Props) {
                       <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${priorityStyle[task.priority]}`}>{task.priority === "Deadline" ? "⏰" : task.priority === "Big Focus" ? "🎀" : "✨"} {task.priority}</span>
                     </div>
                   </div>
-                  <button onClick={() => run(() => deleteTask(task.id))} className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-[#b78e9c] opacity-70 transition hover:bg-[#fff0f3] hover:text-[#b44d69] group-hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-4 focus:ring-[#f4d8e1]" aria-label={`Delete ${task.title}`}>
+                  <button onClick={() => run(() => deleteTask(task.id), (current) => ({ ...current, tasks: current.tasks.filter((item) => item.id !== task.id) }))} className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-[#b78e9c] opacity-70 transition hover:bg-[#fff0f3] hover:text-[#b44d69] group-hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-4 focus:ring-[#f4d8e1]" aria-label={`Delete ${task.title}`}>
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </article>
@@ -260,9 +313,9 @@ export function DashboardClient({ dashboard, formattedDate }: Props) {
                 </button>
               </form>
               <div className="space-y-3">
-                {dashboard.habits.map((habit) => (
+                {data.habits.map((habit) => (
                   <div key={habit.id} className={`group flex items-center gap-3 rounded-2xl border p-3.5 transition ${habit.completedToday ? "border-[#d9c9ee] bg-[#f8f4ff]" : "border-[#eee5f6] bg-white hover:border-[#dccbed]"}`}>
-                    <button onClick={() => run(() => toggleHabit(habit.id))} aria-pressed={habit.completedToday} aria-label={`${habit.completedToday ? "Undo" : "Complete"} ${habit.title}`} className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl border-2 transition focus:outline-none focus:ring-4 focus:ring-[#e9dcf7] ${habit.completedToday ? "border-[#9b7db8] bg-[#9b7db8] text-white" : "border-[#d9cbe7] bg-white text-transparent hover:border-[#ae91c8]"}`}>
+                    <button onClick={() => run(() => toggleHabit(habit.id), (current) => ({ ...current, habits: current.habits.map((item) => item.id === habit.id ? { ...item, completedToday: !item.completedToday, streak: Math.max(0, item.streak + (item.completedToday ? -1 : 1)) } : item) }))} aria-pressed={habit.completedToday} aria-label={`${habit.completedToday ? "Undo" : "Complete"} ${habit.title}`} className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl border-2 transition focus:outline-none focus:ring-4 focus:ring-[#e9dcf7] ${habit.completedToday ? "border-[#9b7db8] bg-[#9b7db8] text-white" : "border-[#d9cbe7] bg-white text-transparent hover:border-[#ae91c8]"}`}>
                       <Check className="h-5 w-5" />
                     </button>
                     <div className="min-w-0 flex-1">
@@ -270,12 +323,12 @@ export function DashboardClient({ dashboard, formattedDate }: Props) {
                       <p className="mt-0.5 text-sm font-bold text-[#a0787a]">🔥 {habit.streak} day streak</p>
                     </div>
                     {habit.completedToday && <span className="text-lg" aria-label="Completed today">🌟</span>}
-                    <button onClick={() => run(() => deleteHabit(habit.id))} className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[#aa91b7] opacity-60 transition hover:bg-[#f2eafa] hover:text-[#865d9d] group-hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-4 focus:ring-[#e9dcf7]" aria-label={`Delete ${habit.title}`}>
+                    <button onClick={() => run(() => deleteHabit(habit.id), (current) => ({ ...current, habits: current.habits.filter((item) => item.id !== habit.id) }))} className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[#aa91b7] opacity-60 transition hover:bg-[#f2eafa] hover:text-[#865d9d] group-hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-4 focus:ring-[#e9dcf7]" aria-label={`Delete ${habit.title}`}>
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
                 ))}
-                {!dashboard.habits.length && (
+                {!data.habits.length && (
                   <div className="rounded-2xl border border-dashed border-[#dfd1eb] bg-[#fcfaff] px-4 py-8 text-center text-sm font-bold text-[#897296]">Plant your first tiny ritual above 🌱</div>
                 )}
               </div>
@@ -292,10 +345,13 @@ export function DashboardClient({ dashboard, formattedDate }: Props) {
               <form onSubmit={(event) => {
                 event.preventDefault();
                 const form = event.currentTarget;
+                const formData = new FormData(form);
+                const notes = String(formData.get("notes") ?? "").slice(0, 5000);
                 setSaved(false);
-                run(async () => { await saveNotes(new FormData(form)); setSaved(true); window.setTimeout(() => setSaved(false), 1800); });
+                run(async () => { await saveNotes(formData); setSaved(true); window.setTimeout(() => setSaved(false), 1800); }, (current) => ({ ...current, notes }));
+                if (isHostedBrowser()) { setSaved(true); window.setTimeout(() => setSaved(false), 1800); }
               }}>
-                <textarea name="notes" defaultValue={dashboard.notes} maxLength={5000} rows={8} aria-label="Quick notes" placeholder="Drop your thoughts here…" className="w-full resize-y rounded-2xl border border-[#efd8e0] bg-[#fffafb] p-4 text-base leading-7 text-[#715461] outline-none transition placeholder:text-[#bea3ad] focus:border-[#d99aae] focus:ring-4 focus:ring-[#f8dce5]" />
+                <textarea key={data.notes} name="notes" defaultValue={data.notes} maxLength={5000} rows={8} aria-label="Quick notes" placeholder="Drop your thoughts here…" className="w-full resize-y rounded-2xl border border-[#efd8e0] bg-[#fffafb] p-4 text-base leading-7 text-[#715461] outline-none transition placeholder:text-[#bea3ad] focus:border-[#d99aae] focus:ring-4 focus:ring-[#f8dce5]" />
                 <button disabled={isPending} className="mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#e6c7d1] bg-white text-sm font-extrabold text-[#a56178] transition hover:-translate-y-0.5 hover:bg-[#fff3f6] focus:outline-none focus:ring-4 focus:ring-[#f4d8e1] disabled:opacity-60">
                   {saved ? <><Check className="h-4 w-4" /> Saved, sweetie!</> : <><Save className="h-4 w-4" /> Save my notes</>}
                 </button>

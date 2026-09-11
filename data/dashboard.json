@@ -2,14 +2,6 @@
   "greetingMessage": "Small steps still move you toward beautiful things.",
   "tasks": [
     {
-      "id": "cc2be1d2-3492-4646-8539-64f0183abc88",
-      "title": "sdfsdf",
-      "category": "Creative",
-      "priority": "Cute & Quick",
-      "completed": true,
-      "date": "2026-09-11"
-    },
-    {
       "id": "task-1",
       "title": "Finish the project outline",
       "category": "Work",
@@ -65,8 +57,8 @@
   "notes": "Remember to send Mia the café address.\r\n\r\nIdea: blush linen curtains for the reading nook ✨",
   "profile": {
     "displayName": "Nicole",
-    "timezone": "Asia/Phnom_Penh",
-    "avatarUrl": "/uploads/profile-db000b24-5912-4576-95b5-d1d4e74dbd1d.png"
+    "avatarUrl": "/uploads/profile-db000b24-5912-4576-95b5-d1d4e74dbd1d.png",
+    "timezone": "Asia/Phnom_Penh"
   },
   "preferences": {
     "showCompletedTasks": true
