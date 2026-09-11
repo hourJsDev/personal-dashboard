@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #fff9fa;
+  --foreground: #553b49;
+  --card: #ffffff;
+  --card-foreground: #553b49;
+  --popover: #ffffff;
+  --popover-foreground: #553b49;
+  --primary: #c96984;
+  --primary-foreground: #ffffff;
+  --secondary: #f4eefe;
+  --secondary-foreground: #725a86;
+  --muted: #fff1f5;
+  --muted-foreground: #907581;
+  --accent: #f7e8f7;
+  --accent-foreground: #725a86;
+  --destructive: #c84762;
+  --border: #f4dce5;
+  --input: #efd4df;
+  --ring: #d88da3;
+  --radius: 1rem;
+}
+
+* { border-color: var(--border); }
+
+html { min-width: 320px; background: var(--background); }
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 5% 8%, rgb(255 218 229 / 58%) 0 9rem, transparent 9.1rem),
+    radial-gradient(circle at 92% 16%, rgb(232 220 255 / 60%) 0 11rem, transparent 11.1rem),
+    linear-gradient(145deg, #fffaf8 0%, #fff5f7 46%, #faf5ff 100%);
+  color: var(--foreground);
+}
+
+::selection { background: #f6c7d5; color: #63384a; }
+
+@keyframes float-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.float-in { animation: float-in 420ms ease-out both; }
+
+.petal-field {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  overflow: hidden;
+}
+
+.falling-petal {
+  --petal-drift: 40px;
+  position: absolute;
+  top: -3rem;
+  opacity: 0;
+  filter: drop-shadow(0 3px 3px rgb(138 81 101 / 12%));
+  animation: petal-fall 16s linear infinite;
+  will-change: transform, opacity;
+}
+
+.gentle-float { animation: gentle-bob 4s ease-in-out infinite; }
+.soft-glow { animation: glow-pulse 3.5s ease-in-out infinite; }
+
+@keyframes petal-fall {
+  0% { opacity: 0; transform: translate3d(0, -5vh, 0) rotate(0deg); }
+  10% { opacity: 0.72; }
+  55% { transform: translate3d(var(--petal-drift), 52vh, 0) rotate(210deg); }
+  90% { opacity: 0.62; }
+  100% { opacity: 0; transform: translate3d(var(--petal-drift), 108vh, 0) rotate(420deg); }
+}
+
+@keyframes gentle-bob {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-6px) rotate(1deg); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 8px 20px rgb(185 111 135 / 20%); }
+  50% { box-shadow: 0 10px 30px rgb(185 111 135 / 38%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; }
+  .petal-field { display: none; }
+}
