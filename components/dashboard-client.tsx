@@ -206,9 +206,9 @@ export function DashboardClient({ dashboard, formattedDate }: Props) {
   }, []);
 
   return (
-    <main className="relative min-h-screen overflow-hidden px-4 py-5 sm:px-6 lg:px-8 lg:py-8">
+    <main className="relative min-h-screen max-w-full overflow-x-hidden px-4 py-5 sm:px-6 lg:px-8 lg:py-8">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-40 [background-image:radial-gradient(#dda9ba_1px,transparent_1px)] [background-size:24px_24px]" />
-      <div className="relative mx-auto max-w-[1440px]">
+      <div className="relative mx-auto min-w-0 max-w-[1440px]">
         <header className="float-in relative overflow-hidden rounded-[1.75rem] border border-white/90 bg-white/75 px-5 py-6 shadow-[0_20px_60px_rgba(153,89,112,0.10)] backdrop-blur-md sm:px-8 lg:flex lg:items-center lg:justify-between lg:px-10 lg:py-8">
           <div aria-hidden="true" className="absolute -right-8 -top-16 h-48 w-48 rounded-full bg-gradient-to-br from-[#fbd3df] to-[#e6dcff] blur-2xl" />
           <div className="relative">
@@ -231,7 +231,7 @@ export function DashboardClient({ dashboard, formattedDate }: Props) {
         </header>
 
         <div className="mt-6 grid items-start gap-6 xl:grid-cols-[minmax(0,1.9fr)_minmax(340px,0.8fr)]">
-          <section className="float-in rounded-[1.75rem] border border-pink-100 bg-white/80 p-4 shadow-[0_18px_50px_rgba(153,89,112,0.08)] backdrop-blur-sm sm:p-6 lg:p-8" style={{ animationDelay: "80ms" }}>
+          <section className="float-in min-w-0 rounded-[1.75rem] border border-pink-100 bg-white/80 p-4 shadow-[0_18px_50px_rgba(153,89,112,0.08)] backdrop-blur-sm sm:p-6 lg:p-8" style={{ animationDelay: "80ms" }}>
             <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <p className="mb-1 text-sm font-extrabold uppercase tracking-[0.14em] text-[#bd8295]">Today’s rhythm</p>
@@ -265,7 +265,7 @@ export function DashboardClient({ dashboard, formattedDate }: Props) {
               </button>
             </form>
 
-            <div className="mb-5 flex gap-2 overflow-x-auto pb-1" aria-label="Filter tasks by category">
+            <div className="mb-5 flex max-w-full gap-2 overflow-x-auto pb-1" aria-label="Filter tasks by category">
               {categories.map((category) => (
                 <button key={category} onClick={() => setActiveCategory(category)} aria-pressed={activeCategory === category} className={`shrink-0 rounded-full border px-4 py-2 text-sm font-extrabold transition focus:outline-none focus:ring-4 focus:ring-[#f1d4de] ${activeCategory === category ? "border-[#bc748b] bg-[#bc748b] text-white shadow-sm" : "border-[#edd7df] bg-white/80 text-[#8a6a77] hover:bg-[#fff1f5]"}`}>
                   {category === "All" ? "All sprinkles" : `${categoryIcon[category]} ${category}`}
@@ -291,7 +291,7 @@ export function DashboardClient({ dashboard, formattedDate }: Props) {
               )) : (
                 <div className="rounded-2xl border border-dashed border-[#e8cbd5] bg-[#fffafb] px-6 py-12 text-center">
                   <div className="text-4xl">🫧</div>
-                  <p className="mt-3 font-bold text-[#765a67]">Nothing here yet — a perfectly clean little slate.</p>
+                  <p className="mt-3 break-words font-bold text-[#765a67]">Nothing here yet — a perfectly clean little slate.</p>
                 </div>
               )}
             </div>

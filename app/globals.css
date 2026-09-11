@@ -39,10 +39,17 @@
 
 * { border-color: var(--border); }
 
-html { min-width: 320px; background: var(--background); }
+html {
+  min-width: 320px;
+  max-width: 100%;
+  overflow-x: hidden;
+  background: var(--background);
+}
 
 body {
   min-height: 100vh;
+  max-width: 100%;
+  overflow-x: hidden;
   background:
     radial-gradient(circle at 5% 8%, rgb(255 218 229 / 58%) 0 9rem, transparent 9.1rem),
     radial-gradient(circle at 92% 16%, rgb(232 220 255 / 60%) 0 11rem, transparent 11.1rem),
@@ -51,6 +58,15 @@ body {
 }
 
 ::selection { background: #f6c7d5; color: #63384a; }
+
+@media (max-width: 575px) {
+  input,
+  select,
+  textarea,
+  button {
+    max-width: 100%;
+  }
+}
 
 @keyframes float-in {
   from { opacity: 0; transform: translateY(8px); }
