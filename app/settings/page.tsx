@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, Camera, Check, Clock3, Heart, Settings2 } from "lucide-react";
+import { ArrowLeft, Check, Clock3, Heart, Settings2 } from "lucide-react";
 import { SettingsFormShell } from "@/components/settings-form-shell";
 import { ProfilePreview } from "@/components/profile-preview";
+import { ProfilePhotoPicker } from "@/components/profile-photo-picker";
 import { readDashboard } from "@/lib/storage";
 
 export const dynamic = "force-dynamic";
@@ -71,14 +72,7 @@ export default async function SettingsPage({
                 <input name="displayName" defaultValue={dashboard.profile.displayName} required maxLength={60} className="h-12 w-full rounded-xl border border-[#edd4dd] bg-white px-4 text-base outline-none transition focus:border-[#d99aae] focus:ring-4 focus:ring-[#f8dce5]" />
               </label>
 
-              <label className="block">
-                <span className="mb-2 block text-sm font-extrabold text-[#755967]">Profile picture</span>
-                <span className="flex min-h-24 cursor-pointer items-center gap-4 rounded-2xl border border-dashed border-[#ddaebd] bg-[#fff9fb] p-4 transition hover:border-[#c7859a] hover:bg-[#fff4f7]">
-                  <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[#f7e5eb] text-[#b46f87]"><Camera className="h-5 w-5" /></span>
-                  <span><span className="block text-base font-bold text-[#765966]">Choose a new photo</span><span className="mt-1 block text-sm text-[#a18791]">JPG, PNG, WebP or GIF · up to 3 MB</span></span>
-                </span>
-                <input name="avatar" type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="mt-2 block w-full text-sm text-[#8c6d79] file:mr-3 file:rounded-lg file:border-0 file:bg-[#f5e9f8] file:px-3 file:py-2 file:font-bold file:text-[#7e6590]" />
-              </label>
+              <ProfilePhotoPicker initialUrl={dashboard.profile.avatarUrl} displayName={dashboard.profile.displayName} />
 
               <label className="block">
                 <span className="mb-2 block text-sm font-extrabold text-[#755967]">Daily message</span>

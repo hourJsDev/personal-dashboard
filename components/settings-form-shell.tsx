@@ -7,6 +7,20 @@ import { updateSettings } from "@/app/actions";
 import { isHostedBrowser, loadBrowserDashboard, saveBrowserDashboard } from "@/lib/browser-storage";
 import type { DashboardData } from "@/lib/storage";
 
+async function avatarDataUrl(file: File): Promise<string> {
+  const image = await createImageBitmap(file);
+  const maxSide = 1200;
+  const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(image.width * scale));
+  canvas.height = Math.max(1, Math.round(image.height * scale));
+  const context = canvas.getContext("2d");
+  if (!context) throw new Error("Image processing is unavailable");
+  context.drawImage(image, 0, 0, canvas.width, canvas.height);
+  image.close();
+  return canvas.toDataURL("image/webp", 0.84);
+}
+
 export function SettingsFormShell({ dashboard, children }: { dashboard: DashboardData; children: ReactNode }) {
   const [status, setStatus] = useState<"idle" | "saved" | "error">("idle");
   const formRef = useRef<HTMLFormElement>(null);
@@ -37,15 +51,10 @@ export function SettingsFormShell({ dashboard, children }: { dashboard: Dashboar
       let avatarUrl = current.profile.avatarUrl;
 
       if (avatar && typeof avatar !== "string" && avatar.size > 0) {
-        if (avatar.size > 3 * 1024 * 1024 || !["image/jpeg", "image/png", "image/webp", "image/gif"].includes(avatar.type)) {
+        if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(avatar.type)) {
           throw new Error("Invalid profile image");
         }
-        avatarUrl = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(String(reader.result));
-          reader.onerror = () => reject(reader.error);
-          reader.readAsDataURL(avatar);
-        });
+        avatarUrl = await avatarDataUrl(avatar);
       }
 
       const displayName = String(formData.get("displayName") ?? "").trim().slice(0, 60);
@@ -73,7 +82,7 @@ export function SettingsFormShell({ dashboard, children }: { dashboard: Dashboar
       )}
       {status === "error" && (
         <div role="alert" className="mt-5 flex items-center gap-3 rounded-2xl border border-[#f1cbd4] bg-[#fff5f7] px-4 py-3 text-sm font-extrabold text-[#a84f68] shadow-sm">
-          <CircleAlert className="h-5 w-5" /> Couldn’t save. Try a smaller profile picture.
+          <CircleAlert className="h-5 w-5" /> Couldn’t save that image. Please use JPG, PNG, WebP or GIF.
         </div>
       )}
       <form ref={formRef} action={updateSettings} onSubmit={handleSubmit} className="mt-6 grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">

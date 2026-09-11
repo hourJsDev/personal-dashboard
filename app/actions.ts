@@ -95,7 +95,7 @@ export async function updateSettings(formData: FormData) {
   const allowedTimezones = ["Asia/Phnom_Penh", "Asia/Bangkok", "Asia/Singapore", "Europe/London", "America/New_York", "UTC"];
 
   let uploadedAvatarUrl = "";
-  if (avatar && typeof avatar !== "string" && avatar.size > 0 && avatar.size <= 3 * 1024 * 1024) {
+  if (avatar && typeof avatar !== "string" && avatar.size > 0) {
     const extensions: Record<string, string> = {
       "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/gif": "gif",
     };
