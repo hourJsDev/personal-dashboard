@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { Check, ChevronDown, Plus, Save, Settings, Sparkles, Trash2 } from "lucide-react";
 import Link from "next/link";
+import { BibleVerseCard } from "@/components/bible-verse-card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { addHabit, addTask, deleteHabit, deleteTask, saveNotes, toggleHabit, toggleTask } from "@/app/actions";
 import { getBrowserTodayKey, isHostedBrowser, loadBrowserDashboard, saveBrowserDashboard } from "@/lib/browser-storage";
@@ -297,6 +298,7 @@ export function DashboardClient({ dashboard, formattedDate }: Props) {
           </section>
 
           <aside className="grid gap-6 md:grid-cols-2 xl:grid-cols-1">
+            <BibleVerseCard />
             <section className="float-in rounded-[1.75rem] border border-purple-100 bg-white/80 p-5 shadow-[0_18px_50px_rgba(120,92,150,0.08)] backdrop-blur-sm sm:p-6" style={{ animationDelay: "140ms" }}>
               <div className="mb-5 flex items-center justify-between">
                 <div>

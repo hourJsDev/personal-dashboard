@@ -1,6 +1,6 @@
 import type { DashboardData } from "@/lib/storage";
 
-const storageKey = "petal-and-plan-dashboard-v1";
+const storageKey = "petal-and-plan-dashboard-v2";
 
 export function isHostedBrowser(): boolean {
   if (typeof window === "undefined") return false;

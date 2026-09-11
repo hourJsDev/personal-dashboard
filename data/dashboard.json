@@ -1,63 +1,11 @@
 {
   "greetingMessage": "Small steps still move you toward beautiful things.",
-  "tasks": [
-    {
-      "id": "task-1",
-      "title": "Finish the project outline",
-      "category": "Work",
-      "priority": "Big Focus",
-      "completed": false,
-      "date": "2026-09-11"
-    },
-    {
-      "id": "task-2",
-      "title": "Pick up fresh flowers",
-      "category": "Shopping",
-      "priority": "Cute & Quick",
-      "completed": false,
-      "date": "2026-09-11"
-    },
-    {
-      "id": "task-3",
-      "title": "Sketch ideas for the reading nook",
-      "category": "Creative",
-      "priority": "Cute & Quick",
-      "completed": true,
-      "date": "2026-09-11"
-    },
-    {
-      "id": "task-4",
-      "title": "Book next week’s pilates class",
-      "category": "Personal",
-      "priority": "Deadline",
-      "completed": false,
-      "date": "2026-09-11"
-    }
-  ],
-  "habits": [
-    {
-      "id": "habit-1",
-      "title": "Morning water",
-      "streak": 8,
-      "completedToday": true
-    },
-    {
-      "id": "habit-2",
-      "title": "10-minute stretch",
-      "streak": 5,
-      "completedToday": true
-    },
-    {
-      "id": "habit-3",
-      "title": "Read 20 pages",
-      "streak": 13,
-      "completedToday": true
-    }
-  ],
-  "notes": "Remember to send Mia the café address.\r\n\r\nIdea: blush linen curtains for the reading nook ✨",
+  "tasks": [],
+  "habits": [],
+  "notes": "",
   "profile": {
     "displayName": "Nicole",
-    "avatarUrl": "/uploads/profile-db000b24-5912-4576-95b5-d1d4e74dbd1d.png",
+    "avatarUrl": "",
     "timezone": "Asia/Phnom_Penh"
   },
   "preferences": {

@@ -24,6 +24,19 @@
   --radius: 1rem;
 }
 
+@keyframes verseReveal {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.verse-reveal {
+  animation: verseReveal 360ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .verse-reveal { animation: none; }
+}
+
 * { border-color: var(--border); }
 
 html { min-width: 320px; background: var(--background); }
