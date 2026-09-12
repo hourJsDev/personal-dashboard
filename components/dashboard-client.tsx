@@ -48,8 +48,27 @@ const priorityStyle: Record<TaskPriority, string> = {
 
 type Props = { dashboard: DashboardData; formattedDate: string };
 
+function getTimeGreeting(timezone: string) {
+  let hour: number;
+
+  try {
+    hour = Number(new Intl.DateTimeFormat("en-US", {
+      hour: "numeric",
+      hourCycle: "h23",
+      timeZone: timezone,
+    }).format(new Date()));
+  } catch {
+    hour = new Date().getHours();
+  }
+
+  if (hour < 12) return "Good morning";
+  if (hour < 18) return "Good afternoon";
+  return "Good evening";
+}
+
 export function DashboardClient({ dashboard, formattedDate }: Props) {
   const [data, setData] = useState(dashboard);
+  const [timeGreeting, setTimeGreeting] = useState(() => getTimeGreeting(dashboard.profile.timezone));
   const [activeCategory, setActiveCategory] = useState<(typeof categories)[number]>("All");
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
@@ -118,6 +137,13 @@ export function DashboardClient({ dashboard, formattedDate }: Props) {
   useEffect(() => {
     setData(isHostedBrowser() ? loadBrowserDashboard(dashboard) : dashboard);
   }, [dashboard]);
+
+  useEffect(() => {
+    const updateGreeting = () => setTimeGreeting(getTimeGreeting(data.profile.timezone));
+    updateGreeting();
+    const interval = window.setInterval(updateGreeting, 60_000);
+    return () => window.clearInterval(interval);
+  }, [data.profile.timezone]);
 
   useEffect(() => {
     const context = document.modelContext;
@@ -218,7 +244,7 @@ export function DashboardClient({ dashboard, formattedDate }: Props) {
               <span className="rounded-full border border-purple-100 bg-[#faf7ff] px-3 py-1.5">✨ {completion}% complete</span>
             </div>
             <p className="mb-1 text-[0.8rem] font-extrabold uppercase tracking-[0.18em] text-[#b88294]">{formattedDate}</p>
-            <h1 className="font-[family-name:var(--font-fraunces)] text-3xl font-semibold tracking-[-0.03em] text-[#5e3e4d] sm:text-4xl lg:text-5xl">Good morning, {data.profile.displayName}.</h1>
+            <h1 className="font-[family-name:var(--font-fraunces)] text-3xl font-semibold tracking-[-0.03em] text-[#5e3e4d] sm:text-4xl lg:text-5xl">{timeGreeting}, {data.profile.displayName}.</h1>
             <p className="mt-3 max-w-2xl text-base font-medium leading-7 text-[#876a77] sm:text-lg">“{data.greetingMessage}”</p>
           </div>
           <div className="mt-6 flex flex-wrap items-center gap-3 lg:mt-0 lg:flex-col lg:items-end">
