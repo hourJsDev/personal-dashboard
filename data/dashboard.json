@@ -2,12 +2,29 @@
   "greetingMessage": "Small steps still move you toward beautiful things.",
   "tasks": [],
   "habits": [],
-  "dateWidgets": [],
+  "dateWidgets": [
+    {
+      "id": "61692ead-46d4-4046-87eb-fdd73ff1f76d",
+      "title": "Our Love",
+      "date": "2021-12-12",
+      "kind": "countdown",
+      "emoji": "💗",
+      "repeatsAnnually": true
+    },
+    {
+      "id": "c9eafcc3-4a6f-40d6-ad25-272244dc660c",
+      "title": "Been together",
+      "date": "2021-12-12",
+      "kind": "countup",
+      "emoji": "💗",
+      "repeatsAnnually": false
+    }
+  ],
   "notes": "",
   "profile": {
     "displayName": "Nicole",
-    "timezone": "Asia/Phnom_Penh",
-    "avatarUrl": ""
+    "avatarUrl": "",
+    "timezone": "Asia/Phnom_Penh"
   },
   "preferences": {
     "showCompletedTasks": true
