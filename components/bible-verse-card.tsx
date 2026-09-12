@@ -47,8 +47,8 @@ export function BibleVerseCard() {
   const [verse, setVerse] = useState<Verse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const lastReference = useRef<string>();
-  const activeRequest = useRef<AbortController>();
+  const lastReference = useRef<string | undefined>(undefined);
+  const activeRequest = useRef<AbortController | undefined>(undefined);
 
   const loadVerse = useCallback(async (forceNew = false) => {
     if (!forceNew) {
