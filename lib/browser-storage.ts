@@ -39,6 +39,7 @@ export function loadBrowserDashboard(fallback: DashboardData): DashboardData {
       preferences: { ...fallback.preferences, ...parsed.preferences },
       tasks: parsed.tasks ?? fallback.tasks,
       habits: parsed.habits ?? fallback.habits,
+      dateWidgets: parsed.dateWidgets ?? fallback.dateWidgets,
     };
     const today = todayKey(dashboard.profile.timezone);
     const tasks = dashboard.tasks.filter((task) => task.date === today);

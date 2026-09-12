@@ -80,6 +80,32 @@ export async function deleteHabit(id: string) {
   revalidateDashboard();
 }
 
+export async function addDateWidget(formData: FormData) {
+  const title = String(formData.get("title") ?? "").trim().slice(0, 80);
+  const date = String(formData.get("date") ?? "");
+  const kind = formData.get("kind") === "countup" ? "countup" : "countdown";
+  const emoji = String(formData.get("emoji") ?? "✨").slice(0, 8);
+  const repeatsAnnually = kind === "countdown" && formData.get("repeatsAnnually") === "true";
+  if (!title || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+
+  await updateDashboard((dashboard) => ({
+    ...dashboard,
+    dateWidgets: [
+      ...dashboard.dateWidgets,
+      { id: crypto.randomUUID(), title, date, kind, emoji, repeatsAnnually },
+    ],
+  }));
+  revalidateDashboard();
+}
+
+export async function deleteDateWidget(id: string) {
+  await updateDashboard((dashboard) => ({
+    ...dashboard,
+    dateWidgets: dashboard.dateWidgets.filter((widget) => widget.id !== id),
+  }));
+  revalidateDashboard();
+}
+
 export async function saveNotes(formData: FormData) {
   const notes = String(formData.get("notes") ?? "").slice(0, 5000);
   await updateDashboard((dashboard) => ({ ...dashboard, notes }));

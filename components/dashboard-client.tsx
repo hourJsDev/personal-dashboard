@@ -4,10 +4,11 @@ import { FormEvent, useEffect, useMemo, useRef, useState, useTransition } from "
 import { Check, ChevronDown, Plus, Save, Settings, Sparkles, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { BibleVerseCard } from "@/components/bible-verse-card";
+import { SpecialDateWidgets } from "@/components/special-date-widgets";
 import { Checkbox } from "@/components/ui/checkbox";
-import { addHabit, addTask, deleteHabit, deleteTask, saveNotes, toggleHabit, toggleTask } from "@/app/actions";
+import { addDateWidget, addHabit, addTask, deleteDateWidget, deleteHabit, deleteTask, saveNotes, toggleHabit, toggleTask } from "@/app/actions";
 import { getBrowserTodayKey, isHostedBrowser, loadBrowserDashboard, saveBrowserDashboard } from "@/lib/browser-storage";
-import type { DashboardData, TaskCategory, TaskPriority } from "@/lib/storage";
+import type { DashboardData, DashboardDateWidget, TaskCategory, TaskPriority } from "@/lib/storage";
 
 declare global {
   interface Document {
@@ -231,6 +232,19 @@ export function DashboardClient({ dashboard, formattedDate }: Props) {
             </Link>
           </div>
         </header>
+
+        <SpecialDateWidgets
+          widgets={data.dateWidgets}
+          isPending={isPending}
+          onAdd={(widget, formData) => run(
+            () => addDateWidget(formData),
+            (current) => ({ ...current, dateWidgets: [...current.dateWidgets, { ...widget, id: crypto.randomUUID() }] }),
+          )}
+          onDelete={(id) => run(
+            () => deleteDateWidget(id),
+            (current) => ({ ...current, dateWidgets: current.dateWidgets.filter((widget: DashboardDateWidget) => widget.id !== id) }),
+          )}
+        />
 
         <div className="mt-6 grid items-start gap-6 xl:grid-cols-[minmax(0,1.9fr)_minmax(340px,0.8fr)]">
           <section className="float-in min-w-0 rounded-[1.75rem] border border-pink-100 bg-white/80 p-4 shadow-[0_18px_50px_rgba(153,89,112,0.08)] backdrop-blur-sm sm:p-6 lg:p-8" style={{ animationDelay: "80ms" }}>

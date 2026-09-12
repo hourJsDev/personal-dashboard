@@ -20,6 +20,17 @@ export type DashboardHabit = {
   completedToday: boolean;
 };
 
+export type DateWidgetKind = "countdown" | "countup";
+
+export type DashboardDateWidget = {
+  id: string;
+  title: string;
+  date: string;
+  kind: DateWidgetKind;
+  emoji: string;
+  repeatsAnnually: boolean;
+};
+
 export type DashboardProfile = {
   displayName: string;
   avatarUrl: string;
@@ -34,6 +45,7 @@ export type DashboardData = {
   greetingMessage: string;
   tasks: DashboardTask[];
   habits: DashboardHabit[];
+  dateWidgets: DashboardDateWidget[];
   notes: string;
   profile: DashboardProfile;
   preferences: DashboardPreferences;
@@ -65,6 +77,7 @@ export async function readDashboard(): Promise<DashboardData> {
     greetingMessage: parsed.greetingMessage ?? "A fresh day is yours to shape.",
     tasks: parsed.tasks ?? [],
     habits: parsed.habits ?? [],
+    dateWidgets: parsed.dateWidgets ?? [],
     notes: parsed.notes ?? "",
     profile: {
       displayName: parsed.profile?.displayName ?? "Lovely",
