@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { CalendarHeart, ChevronDown, Plus, Trash2, X } from "lucide-react";
 import type { DashboardDateWidget, DateWidgetKind } from "@/lib/storage";
 
@@ -94,17 +94,13 @@ function widgetTime(widget: DashboardDateWidget, now: Date) {
 }
 
 export function SpecialDateWidgets({ widgets, isPending, onAdd, onDelete }: Props) {
-  const [now, setNow] = useState(() => new Date());
+  const [now, setNow] = useState<Date | null>(null);
   const [adding, setAdding] = useState(false);
   const [kind, setKind] = useState<DateWidgetKind>("countdown");
   const formRef = useRef<HTMLFormElement>(null);
-  const today = useMemo(() => {
-    const date = new Date();
-    const offset = date.getTimezoneOffset();
-    return new Date(date.getTime() - offset * 60_000).toISOString().slice(0, 10);
-  }, []);
 
   useEffect(() => {
+    setNow(new Date());
     const timer = window.setInterval(() => setNow(new Date()), 30_000);
     return () => window.clearInterval(timer);
   }, []);
@@ -149,7 +145,7 @@ export function SpecialDateWidgets({ widgets, isPending, onAdd, onDelete }: Prop
           </label>
           <label className="grid gap-1.5 text-sm font-bold text-[#765967]">
             Date
-            <input name="date" type="date" required defaultValue={today} className="h-11 min-w-0 rounded-xl border border-[#e6d2dc] bg-white px-3 text-base outline-none focus:border-[#c989a0] focus:ring-4 focus:ring-[#f5dce5]" />
+            <input name="date" type="date" required className="h-11 min-w-0 rounded-xl border border-[#e6d2dc] bg-white px-3 text-base outline-none focus:border-[#c989a0] focus:ring-4 focus:ring-[#f5dce5]" />
           </label>
           <label className="relative grid gap-1.5 text-sm font-bold text-[#765967]">
             Count
@@ -183,7 +179,11 @@ export function SpecialDateWidgets({ widgets, isPending, onAdd, onDelete }: Prop
       {widgets.length ? (
         <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {widgets.map((widget, index) => {
-            const time = widgetTime(widget, now);
+            const time = now ? widgetTime(widget, now) : {
+              value: "—",
+              units: "Updating the count…",
+              note: parseDate(widget.date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
+            };
             return (
               <article key={widget.id} className={`group relative overflow-hidden rounded-2xl border p-5 shadow-[0_10px_30px_rgba(103,72,88,0.06)] ${cardStyles[index % cardStyles.length]}`}>
                 <div aria-hidden="true" className="absolute -right-7 -top-7 h-24 w-24 rounded-full bg-white/60 blur-xl" />

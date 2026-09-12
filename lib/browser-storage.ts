@@ -4,8 +4,7 @@ const storageKey = "petal-and-plan-dashboard-v2";
 const removedDefaultAvatar = "/uploads/profile-06fdbf71-d49a-4f64-9733-c921221c3c8b.png";
 
 export function isHostedBrowser(): boolean {
-  if (typeof window === "undefined") return false;
-  return !["localhost", "127.0.0.1"].includes(window.location.hostname);
+  return typeof window !== "undefined";
 }
 
 function todayKey(timezone: string): string {

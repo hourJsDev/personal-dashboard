@@ -1,5 +1,4 @@
-import { mkdir, readFile, rename, writeFile } from "fs/promises";
-import path from "path";
+import dashboardSeed from "@/data/dashboard.json";
 
 export type TaskCategory = "Work" | "Personal" | "Creative" | "Shopping";
 export type TaskPriority = "Cute & Quick" | "Big Focus" | "Deadline";
@@ -51,8 +50,7 @@ export type DashboardData = {
   preferences: DashboardPreferences;
 };
 
-const dataDirectory = path.join(process.cwd(), "data");
-const dataFile = path.join(dataDirectory, "dashboard.json");
+let memoryDashboard: DashboardData | null = null;
 let updateQueue: Promise<unknown> = Promise.resolve();
 
 export function getTodayKey(date = new Date(), timezone?: string): string {
@@ -71,8 +69,8 @@ export function getTodayKey(date = new Date(), timezone?: string): string {
 }
 
 export async function readDashboard(): Promise<DashboardData> {
-  const raw = await readFile(dataFile, "utf8");
-  const parsed = JSON.parse(raw) as Partial<DashboardData>;
+  if (memoryDashboard) return memoryDashboard;
+  const parsed = dashboardSeed as Partial<DashboardData>;
   const dashboard: DashboardData = {
     greetingMessage: parsed.greetingMessage ?? "A fresh day is yours to shape.",
     tasks: parsed.tasks ?? [],
@@ -93,18 +91,16 @@ export async function readDashboard(): Promise<DashboardData> {
 
   if (currentTasks.length !== dashboard.tasks.length) {
     const refreshedDashboard = { ...dashboard, tasks: currentTasks };
-    await writeDashboard(refreshedDashboard);
+    memoryDashboard = refreshedDashboard;
     return refreshedDashboard;
   }
 
+  memoryDashboard = dashboard;
   return dashboard;
 }
 
 export async function writeDashboard(data: DashboardData): Promise<void> {
-  await mkdir(dataDirectory, { recursive: true });
-  const temporaryFile = `${dataFile}.${process.pid}.tmp`;
-  await writeFile(temporaryFile, `${JSON.stringify(data, null, 2)}\n`, "utf8");
-  await rename(temporaryFile, dataFile);
+  memoryDashboard = data;
 }
 
 export function updateDashboard(
